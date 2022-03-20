@@ -50,7 +50,7 @@ class ChatService {
         filterBody[reformatRole] = this.uid;
 
         const updateChat = new Promise(async(resolve, reject) => {
-            await this.db.collection('chats').findOneAndUpdate(filterBody, { $set : chat_content }, { returnOriginal: false }).then((doc) => {
+            await this.db.collection('chats').findOneAndUpdate(filterBody, { $set : chat_content }, {returnDocument: "after"}).then((doc) => {
                 resolve(doc.value);
             })
         }).then((doc) => doc)
@@ -66,14 +66,12 @@ class ChatService {
      * @returns the specific chat
      **/
     getChat = async(chat_id) => {
-
         const role = await getUserRole(this.uid);
         const reformatRole = `${role.replace(/-/g, '_')}_uid`
+        console.log(this.uid)
 
         const filterBody = { "_id" : ObjectID(chat_id) };
         filterBody[reformatRole] = this.uid
-
-        console.log({'_id': this.uid })
 
         console.log(filterBody)
 
@@ -83,8 +81,6 @@ class ChatService {
                 resolve(doc)
             })}).then((doc) => doc)
         
-        console.log(await getChatDetails)
-
         return await getChatDetails;
     };
 

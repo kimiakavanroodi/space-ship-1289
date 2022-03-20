@@ -29,6 +29,21 @@ module.exports.getUserRole = async(uid) => {
 };
 
 /**
+ * Retrieve user email firebase auth
+ * @param {string} uid 
+ * @returns the user's email
+ */
+ module.exports.getUserEmail = async(uid) => {
+    return admin.auth().getUser(uid).then((user) => {
+        return user.email;
+
+    }).catch((error) => {
+        console.log("Cannot get email")
+        return null;
+    })
+};
+
+/**
  * Get user's display name
  * @param {string} uid 
  * @returns display name of user
@@ -38,7 +53,7 @@ module.exports.getUserDisplayName = async(uid) => {
         return user.displayName;
 
     }).catch((error) => {
-        console.log("Wrong role")
+        console.log("Cannot get display name")
         return null;
     })
 };

@@ -24,8 +24,11 @@ class MessageService extends ChatService {
         const messageBody = {
             _id: uuidv4().toString(),
             date_time: new Date().toISOString(),
-            sender: displayName,
-            role: role,
+            sender: {
+                role: role,
+                uid: this.uid,
+                name: displayName
+            },
             message: message
         };
 

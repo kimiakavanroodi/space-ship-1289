@@ -17,6 +17,8 @@ const MatchService = require('./services/matches/MatchService');
 const { createMessageSchema } = require('./models/chats/MessageValidation');
 const ProfileService = require('./services/profiles/ProfileService');
 const MessageService = require('./services/chats/messages/MessageService');
+const { createCalendarInvite } = require('./models/chats/calendar/CalendarValidation');
+const CalendarService = require('./services/chats/calendar/CalendarService');
 
 
 const options = {
@@ -397,16 +399,16 @@ app.get('/chats/:id', async(req, res) => {
         return;
     };
 
-    const { error, value } = createMessageSchema.validate(req.body, options);
+    const { error, value } = createCalendarInvite.validate(req.body, options);
 
     if (error) {
 
         res.status(400).send(error.message);
 
     } else {
-        const messageHandler = new MessageService(app.locals.db, uid, chatId);
+        const calendarHandler = new CalendarService(app.locals.db, uid, chatId);
 
-        messageHandler.createMessage(value.message).then((resp) => {
+        calendarHandler.createCalendar(value).then((resp) => {
             res.status(200).send({ chat : resp })
         });
     };
