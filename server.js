@@ -9,7 +9,7 @@ var mongo = require('mongodb');
 const admin = require("firebase-admin");
 var serviceAccount = require("/Users/kimiakavanroodi/Documents/create-x-capstone-backend/match-84338-firebase-adminsdk-pkzko-033fc5925d.json");
 
-const { validateTokenId, getUserRole } = require('./config/Firebase');
+const { validateTokenId, getUserRole, getUserAge, getUserDisplayName } = require('./config/Firebase');
 const { userAccountSchema, stylistSchema, styleSeekerSchema } = require('./models/profiles/UserValidation');
 const { matchSchema, createMatchSchema } = require('./models/MatchValidaton');
 const ChatService = require('./services/chats/ChatService');
@@ -47,23 +47,19 @@ app.post('/account', async(req, res) => {
 
     } else {
 
-        const email = value.email;
-        const password = value.password;
-        const role = value.role;
-        const name = value.name;
+        const accountBody = {
+            email: value.email,
+            password: value.password,
+            displayName: value.name
+        };
 
-        admin.auth().createUser({
-               email: email,
-               emailVerified: false,
-               password: password,
-               displayName: name,
-               disabled: false,
-        }).then((user) => {
+        admin.auth().createUser(accountBody).then((user) => {
 
-            admin.auth().setCustomUserClaims(user.uid, { role : role }) // set role in metadata
+            admin.auth().setCustomUserClaims(user.uid, { role : value.role }) // set role in metadata
+            admin.auth().setCustomUserClaims(user.uid, { age : value.age }) // set role in metadata
             admin.auth().setCustomUserClaims(user.uid, { onboarding : false }) // has not completed onboarding
-            res.status(200).send({ message : "Success!" })
 
+            res.status(200).send({ message : "Success!" })
          }).catch((error) => {
 
             res.status(400).send({ message : error.message})
@@ -88,9 +84,15 @@ app.post('/stylist', async(req, res) => {
         res.status(400).send({ message : error.message })
 
     } else {
-        const stylistBody = value
-        stylistBody._id = uid;
-        stylistBody.role = role;
+        const age = await getUserAge(uid);
+
+        const stylistBody = {
+            '_id': uid,
+            'name': await getUserDisplayName(uid),
+            'role': role,
+            'age': age,
+            ...value
+        };
 
         app.locals.db.collection('stylist').insertOne(stylistBody).then((doc) => {
             res.status(200).send({ profile : stylistBody }) 
@@ -136,12 +138,18 @@ app.post('/style-seeker', async(req, res) => {
         res.status(400).send({ message : error.message })
 
     } else {
-        const styleSeeker = value
-        styleSeeker._id = uid;
-        styleSeeker.role = role;
+       const age = await getUserAge(uid);
 
-        app.locals.db.collection('style-seeker').insertOne(styleSeeker).then((doc) => {
-            res.status(200).send({ profile : styleSeeker }) 
+        const styleSeekerBody = {
+            '_id': uid,
+            'name': await getUserDisplayName(uid),
+            'role': role,
+            'age': age,
+            ...value
+        };
+
+        app.locals.db.collection('style-seeker').insertOne(styleSeekerBody).then((doc) => {
+            res.status(200).send({ profile : styleSeekerBody }) 
 
         }).catch((error) => {
             res.status(400).send({ message : error.message }) 

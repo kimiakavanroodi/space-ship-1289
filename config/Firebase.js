@@ -29,6 +29,21 @@ module.exports.getUserRole = async(uid) => {
 };
 
 /**
+ * Retrieve age from metadata for user
+ * @param {string} uid 
+ * @returns the user role (style-seeker or stylist)
+ */
+ module.exports.getUserAge = async(uid) => {
+    return admin.auth().getUser(uid).then((user) => {
+        return user.customClaims.age;
+
+    }).catch((error) => {
+        console.log("Wrong role")
+        return null;
+    })
+};
+
+/**
  * Retrieve user email firebase auth
  * @param {string} uid 
  * @returns the user's email
