@@ -12,15 +12,13 @@ class CalendarService extends ChatService {
 
     /**
      * Create a calendar invite for the stylist and style-seeker
-     * @param {object} calendar 
+     * @param {object} calendar refer to Calendar interface
      * @returns the updated chat object
      */
     createCalendar = async(calendar) => {
         const role = await getUserRole(this.uid);
         const displayName = await getUserDisplayName(this.uid);
         const userEmail = await getUserEmail(this.uid);
-
-        console.log(calendar)
 
         const calendarBody = {
             _id: uuidv4().toString(),
@@ -35,11 +33,8 @@ class CalendarService extends ChatService {
                 uid: "",
                 role: "",
                 email: ""
-            },
-            start_date: calendar.start_date,
-            end_date: calendar.end_date,
-            title: calendar.title,
-            description: calendar.description,
+            }, 
+            ...calendar
         };
 
         var chatDetails = await this.getChat(this.chatId);
@@ -56,8 +51,6 @@ class CalendarService extends ChatService {
         calendarBody['invitee']['email'] = await getUserEmail(invitee_uid);
 
         chatDetails.calendar_invites.push(calendarBody)
-
-        console.log(calendarBody)
 
         const updatedChat = await this.updateChat(this.chatId, chatDetails);
         return updatedChat;

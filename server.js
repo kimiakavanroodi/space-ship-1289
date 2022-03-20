@@ -18,7 +18,9 @@ const { createMessageSchema } = require('./models/chats/MessageValidation');
 const ProfileService = require('./services/profiles/ProfileService');
 const MessageService = require('./services/chats/messages/MessageService');
 const { createCalendarInvite } = require('./models/chats/calendar/CalendarValidation');
-const CalendarService = require('./services/chats/calendar/CalendarService');
+const CalendarService = require('./services/chats/calendar/CalendarService.ts');
+const { createOutfit } = require('./models/chats/outfits/OutfitValidation');
+const OutfitService = require('./services/chats/outfits/OutfitService');
 
 
 const options = {
@@ -380,11 +382,46 @@ app.get('/chats/:id', async(req, res) => {
     } else {
         const messageHandler = new MessageService(app.locals.db, uid, chatId);
 
-        messageHandler.createMessage(value.message).then((resp) => {
+        messageHandler.createMessage(value).then((resp) => {
             res.status(200).send({ chat : resp })
         });
     };
 })
+
+/**
+ * Post a new outfit in the chat between stylist and style-seeker
+ */
+ app.post('/chats/:id/outfit', async(req, res) => {
+    const auth = req.headers.authorization
+    const uid = await validateTokenId(auth)
+    const role = await getUserRole(auth);
+    const chatId = req.params.id;
+
+    if (uid == null) {
+        res.status(401).send("Bad token");
+        return;
+    };
+
+    // if (role !== "stylist") {
+    //     res.status(403).send("You cannot make outfits.")
+    //     return;
+    // };
+
+    const { error, value } = createOutfit.validate(req.body, options);
+
+    if (error) {
+
+        res.status(400).send(error.message);
+
+    } else {
+        const outfitHandler = new OutfitService(app.locals.db, uid, chatId);
+
+        outfitHandler.createOutfit(value).then((resp) => {
+            res.status(200).send({ outfit : resp })
+        });
+    };
+})
+
 
 /**
  * Post a new message in the chat between the two users
@@ -409,7 +446,7 @@ app.get('/chats/:id', async(req, res) => {
         const calendarHandler = new CalendarService(app.locals.db, uid, chatId);
 
         calendarHandler.createCalendar(value).then((resp) => {
-            res.status(200).send({ chat : resp })
+            res.status(200).send({ calendar : resp })
         });
     };
 })

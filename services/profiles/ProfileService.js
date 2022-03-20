@@ -2,7 +2,6 @@ const { async } = require("@firebase/util");
 const { ObjectID } = require("mongodb");
 const { getUserRole } = require("../../config/Firebase");
 
-
 class ProfileService {
     constructor(db) {
         this.db = db;

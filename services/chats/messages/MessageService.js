@@ -29,7 +29,7 @@ class MessageService extends ChatService {
                 uid: this.uid,
                 name: displayName
             },
-            message: message
+            ...message
         };
 
         var chatDetails = await this.getChat(this.chatId);
@@ -39,8 +39,17 @@ class MessageService extends ChatService {
         return updatedChat;
     };
 
+    /**
+     * 
+     * @param {\} messageId 
+     */
     deleteMessage = async(messageId) => {};
 
+    /**
+     * 
+     * @param {*} messageId 
+     * @param {*} message 
+     */
     updateMessage = async(messageId, message) => {};
 };
 
