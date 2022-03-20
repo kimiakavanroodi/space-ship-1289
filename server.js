@@ -380,6 +380,7 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 8080;
 
+MongoClient.connect('DB-SECRET', async(err, db) => {
     http.listen(PORT, async() => {
 
         app.locals.db = db.db('match-it')
