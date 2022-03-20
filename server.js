@@ -10,11 +10,13 @@ const admin = require("firebase-admin");
 var serviceAccount = require("/Users/kimiakavanroodi/Documents/create-x-capstone-backend/match-84338-firebase-adminsdk-pkzko-033fc5925d.json");
 
 const { validateTokenId, getUserRole } = require('./config/Firebase');
-const { userAccountSchema, stylistSchema, styleSeekerSchema } = require('./models/UserValidation');
+const { userAccountSchema, stylistSchema, styleSeekerSchema } = require('./models/profiles/UserValidation');
 const { matchSchema, createMatchSchema } = require('./models/MatchValidaton');
 const ChatService = require('./services/chats/ChatService');
 const MatchService = require('./services/matches/MatchService');
 const { createMessageSchema } = require('./models/chats/MessageValidation');
+const ProfileService = require('./services/profiles/ProfileService');
+const MessageService = require('./services/chats/messages/MessageService');
 
 
 const options = {
@@ -96,17 +98,20 @@ app.post('/stylist', async(req, res) => {
 })
 
 app.get('/stylist/:id', async(req, res) => {
-    const auth = req.headers.authorization
-    const uid = await validateTokenId(auth)
+    const auth = req.headers.authorization;
+    const uid = await validateTokenId(auth);
+    const stylistId = req.params.id
+    console.log(stylistId)
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token...")
+        return;
+    };
 
-    const paramsId = req.params.id
+    const profileHandler = new ProfileService(app.locals.db);
 
-    app.locals.db.collection('stylist').findOne({'_id' : paramsId.toString() }).then((doc) => {
-        res.status(200).send({ profile : doc })
-    }).catch((error) => {
-        res.status(400).send([]) 
+    await profileHandler.getStylistProfile(stylistId).then((doc) => {
+        res.status(200).send({ stylist : doc })
     })
 })
 
@@ -200,18 +205,25 @@ app.get('/bulk-stylists', async(req, res) => {
     if (error) {
          res.status(400).send({ message : error.message })
     } else {
-
         const matchHandler = new MatchService(app.locals.db)
-        const matchExists = matchHandler.doesMatchExist(value, value.stylist_uid)
+        const profileHandler = new ProfileService(app.locals.db)
 
-        if (matchExists) {
-            res.status(403).send("Match already exists")
+        const matchExists = await matchHandler.doesMatchExist(uid, value.stylist_uid)
+        const isStylist = await profileHandler.isStylist(value.stylist_uid);
+
+        if (isStylist) {
+            if (matchExists) {
+                res.status(403).send("Match already exists");
+
+            } else {
+                matchHandler.createMatch(uid, value.stylist_uid).then((match) => {
+                    if (match) {
+                        res.status(200).send({ match : match }) 
+                    }
+                })
+            }
         } else {
-            matchHandler.createMatch(uid, value).then((match) => {
-                if (match) {
-                    res.status(200).send({ match : match }) 
-                }
-            })
+            res.status(403).send("This user is not a stylist")
         }
     }
 })
@@ -240,9 +252,8 @@ app.get('/matches', async(req, res) => {
     res.status(200).send({ matches : await allMatches })
 })
 
-
 /*
- * Approve a match with a style-seeker
+ * Get Matches Id
  */
 app.get('/matches/:id', async(req, res) => {
     const auth = req.headers.authorization
@@ -288,38 +299,43 @@ app.post('/matches/:id', async(req, res) => {
     }).then((items) => items)
     
     var matchDetails = await getMatchDetails;
-    matchDetails.approved = true
 
-    const chatService = new ChatService(app.locals.db)
+    if (matchDetails.approved) {
 
-    await app.locals.db.collection('matches').updateOne(filterObj, { $set: matchDetails }, { upsert: false }).then((res) => {
-        chatService.createChat(matchDetails.style_seeker_uid, matchDetails.stylist_uid)
-    })
+        res.status(403).send("This match was already approved!")
 
-    res.status(200).send({ match : matchDetails })
+    } else {
+        matchDetails.approved = true
 
-    // create a new chat
+        const chatService = new ChatService(app.locals.db)
+    
+        await app.locals.db.collection('matches').updateOne(filterObj, { $set: matchDetails }, { upsert: false }).then((res) => {
+            chatService.createChat(matchDetails.style_seeker_uid, matchDetails.stylist_uid)
+        })
+        res.status(200).send({ match : matchDetails })
+    }
+
 })
 
-/**
+/*
  * Get specific chat details
  */
 app.get('/chats/:id', async(req, res) => {
     const auth = req.headers.authorization
     const uid = await validateTokenId(auth)
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token...");
+        return;
+    };
 
     const chatId = req.params.id
-    const role = await getUserRole(uid)
+    const chatHandler = new ChatService(app.locals.db, uid);
 
-    const chatService = new ChatService(app.locals.db);
-
-    chatService.getChat(chatId, role, uid).then((resp) => {
+    chatHandler.getChat(chatId).then((resp) => {
         res.status(200).send({ chat : resp })
     })
-
-})
+});
 
 /**
  * Get all chat details of a user
@@ -328,17 +344,17 @@ app.get('/chats/:id', async(req, res) => {
     const auth = req.headers.authorization
     const uid = await validateTokenId(auth)
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token...");
+        return;
+    }
 
-    const role = await getUserRole(uid)
+    const chatHandler = new ChatService(app.locals.db, uid);
 
-    const chatService = new ChatService(app.locals.db);
-
-    chatService.getAllChats(role, uid).then((resp) => {
+    chatHandler.getAllChats().then((resp) => {
         res.status(200).send({ chats : resp })
-    })
-})
-
+    });
+});
 
 /**
  * Post a new message in the chat between the two users
@@ -360,17 +376,41 @@ app.get('/chats/:id', async(req, res) => {
         res.status(400).send(error.message);
 
     } else {
+        const messageHandler = new MessageService(app.locals.db, uid, chatId);
 
-        const chatService = new ChatService(app.locals.db);
-
-        chatService.createMessage(uid, chatId, value.message).then((resp) => {
+        messageHandler.createMessage(value.message).then((resp) => {
             res.status(200).send({ chat : resp })
-        })
-    }
+        });
+    };
 })
 
+/**
+ * Post a new message in the chat between the two users
+ */
+ app.post('/chats/:id/calendar', async(req, res) => {
+    const auth = req.headers.authorization
+    const uid = await validateTokenId(auth)
+    const chatId = req.params.id;
 
+    if (uid == null) {
+        res.status(401).send("Bad token");
+        return;
+    };
 
+    const { error, value } = createMessageSchema.validate(req.body, options);
+
+    if (error) {
+
+        res.status(400).send(error.message);
+
+    } else {
+        const messageHandler = new MessageService(app.locals.db, uid, chatId);
+
+        messageHandler.createMessage(value.message).then((resp) => {
+            res.status(200).send({ chat : resp })
+        });
+    };
+})
 
 /**
  * DON'T TOUCH THIS PART
@@ -380,7 +420,7 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 8080;
 
-MongoClient.connect('DB-SECRET', async(err, db) => {
+MongoClient.connect('DB', async(err, db) => {
     http.listen(PORT, async() => {
 
         app.locals.db = db.db('match-it')

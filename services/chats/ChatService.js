@@ -2,22 +2,26 @@ const { crypto } = require("crypto");
 const { ObjectID } = require("mongodb");
 const { getUserRole, getUserDisplayName } = require("../../config/Firebase");
 const { v4: uuidv4 } = require('uuid');
-const { async } = require("@firebase/util");
+
 
 class ChatService {
-    constructor(db) { 
-        this.db = db 
-    }
+    constructor(db, uid) { 
+        this.db = db
+        this.uid = uid; 
+    };
+
     /**
-     *  gets all chats for any user (style-seeker or stylist)
+     *  Get all chats for any user (style-seeker or stylist)
      * @param {string} role style-seeker or stylist
      * @param {string} uid  their identity
      * @returns an array of all chats for user
-     */
-    getAllChats = async(role, uid) => {
+     **/
+    getAllChats = async() => {
+        const role = await getUserRole(this.uid)
         const reformatRole = `${role.replace(/-/g, '_')}_uid` // style_seeker_uid or stylist_uid
+
         const filterBody = {};
-        filterBody[reformatRole] = uid
+        filterBody[reformatRole] = this.uid
         
         // get all chat details from database
         const getAllChatDetails = new Promise(async(resolve, reject) => {
@@ -27,33 +31,6 @@ class ChatService {
         }).then((doc) => doc)
 
         return await getAllChatDetails;
-    }
-
-    /**
-     * Create and send a new message by any user
-     * @param {string} uid  their identity
-     * @param {string} chat_id  chat Id
-     * @param {string} message message being sent
-     * returns the newly-created message object
-     */
-    createMessage = async(uid, chat_id, message) => {
-        const role = await getUserRole(uid);
-        const displayName = await getUserDisplayName(uid);
-
-        const messageBody = {
-            _id: uuidv4().toString(),
-            date_time: new Date().toISOString(),
-            sender: displayName,
-            role: role,
-            message: message
-        };
-
-        var chatDetails = await this.getChat(chat_id, role, uid);
-        chatDetails.messages.push(messageBody)
-
-        const updatedChat = await this.updateChat(uid, chat_id, chatDetails);
-
-        return updatedChat;
     };
 
     /**
@@ -62,19 +39,19 @@ class ChatService {
      * @param {string} chat_id chat Id
      * @param {string} chat_content updated content of chat
      * Returns the updated version of the chat details
-     */
-    updateChat = async(uid, chat_id, chat_content) => {
-        const role = await getUserRole(uid);
+     **/
+    updateChat = async(chat_id, chat_content) => {
+        const role = await getUserRole(this.uid);
         const reformatRole = `${role.replace(/-/g, '_')}_uid`
         const filterBody = {
             "_id": ObjectID(chat_id),
         };
 
-        filterBody[reformatRole] = uid;
+        filterBody[reformatRole] = this.uid;
 
         const updateChat = new Promise(async(resolve, reject) => {
-            await this.db.collection('chats').findOneAndUpdate(filterBody, { $set : chat_content }, { upsert: false }).then((doc) => {
-                resolve(doc);
+            await this.db.collection('chats').findOneAndUpdate(filterBody, { $set : chat_content }, { returnOriginal: false }).then((doc) => {
+                resolve(doc.value);
             })
         }).then((doc) => doc)
 
@@ -83,27 +60,33 @@ class ChatService {
 
     /**
      * Retrieve the chat for the specific id
-     * @param {string} chat_id  pass in chat id
+     * @param {string} chat_id pass in chat_id
      * @param {string} role style-seeker or stylist
      * @param {string} uid identity of user
-     * @returns 
-     */
-    getChat = async(chat_id, role, uid) => {
-        const reformatRole = `${role.replace(/-/g, '_')}_uid`
-        const filterBody = {
-            "_id": ObjectID(chat_id),
-        };
+     * @returns the specific chat
+     **/
+    getChat = async(chat_id) => {
 
-        filterBody[reformatRole] = uid
+        const role = await getUserRole(this.uid);
+        const reformatRole = `${role.replace(/-/g, '_')}_uid`
+
+        const filterBody = { "_id" : ObjectID(chat_id) };
+        filterBody[reformatRole] = this.uid
+
+        console.log({'_id': this.uid })
+
+        console.log(filterBody)
 
         const getChatDetails = new Promise((resolve, reject) => {
             this.db.collection('chats').findOne(filterBody).then((doc) => {
+                console.log(doc)
                 resolve(doc)
             })}).then((doc) => doc)
+        
+        console.log(await getChatDetails)
 
         return await getChatDetails;
-    }
-
+    };
 
     createChat = async(style_seeker_uid, stylist_uid) => {
         const chatBody = {
@@ -125,8 +108,7 @@ class ChatService {
             })}).then((doc) => doc)
 
         return await createChatDetails;
-    }
-
+    };
 }
 
 module.exports = ChatService

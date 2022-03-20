@@ -1,7 +1,6 @@
 const { async } = require("@firebase/util");
 const { ObjectID } = require("mongodb");
 
-
 class MatchService {
     constructor(db) {
         this.db = db;
@@ -34,19 +33,18 @@ class MatchService {
      * returns an object of the match created
      */
     createMatch = async(style_seeker_uid, stylist_uid) => {
-
         const matchBody = {
             style_seeker_uid: style_seeker_uid,
             stylist_uid: stylist_uid,
             approved: false
-        }
+        };
 
-        const createMatch = new Promise((resolve, reject) => {
+        new Promise((resolve, reject) => {
             this.db.collection('matches').insertOne(matchBody).then((doc) => {
                 resolve(doc)
-            })}).then((doc) => doc)
+        })}).then((doc) => doc)
 
-        return await createMatch;
+        return matchBody;
     };
 
 }

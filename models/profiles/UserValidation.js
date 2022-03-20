@@ -42,31 +42,3 @@ module.exports.styleSeekerSchema = Joi.object({
     interests: Joi.array().optional(),
     portfolio: Joi.allow(null).required()
 })
-
-
-
-
-// name: string,
-// age: int,
-// display_photo: string,
-// rate: {
-//     cost: 5,
-//     max_outfits: 5,
-// },  // null, if style-seeker
-// description: string,
-// interests: [{
-//         q_1: string,
-//         a_1: string,
-//     },{
-//         q_2: string,
-//         a_2: string,
-//     }
-//     ...
-// ],
-// portfolio: [ // null, if style-seeker
-//     {
-//         id: integer,
-//         photo_url: string
-//     },
-//     ...
-// ]

@@ -41,4 +41,5 @@ module.exports.getUserDisplayName = async(uid) => {
         console.log("Wrong role")
         return null;
     })
-  }
+};
+
