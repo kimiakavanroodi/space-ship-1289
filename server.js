@@ -11,7 +11,7 @@ var serviceAccount = require("/Users/kimiakavanroodi/Documents/create-x-capstone
 
 const { validateTokenId, getUserRole, getUserAge, getUserDisplayName } = require('./config/Firebase');
 const { userAccountSchema, stylistSchema, styleSeekerSchema } = require('./models/profiles/UserValidation');
-const { matchSchema, createMatchSchema } = require('./models/MatchValidaton');
+const { matchSchema, createMatchSchema } = require('./models/matches/MatchValidaton');
 const ChatService = require('./services/chats/ChatService');
 const MatchService = require('./services/matches/MatchService');
 const { createMessageSchema } = require('./models/chats/MessageValidation');
@@ -70,36 +70,27 @@ app.post('/account', async(req, res) => {
 app.post('/stylist', async(req, res) => {
     const auth = req.headers.authorization
     const uid = await validateTokenId(auth)
-    
-    if (uid == null) return;
-
     const role = await getUserRole(uid)
 
-    if (role != "stylist") return
+    if (uid == null) {
+        res.status(401).send("Bad Token...");
+        return;
+    };
+
+    if (role != "stylist") {
+        res.status(403).send("You are not registered as a stylist.")
+        return;
+    };
 
     const { error, value } = stylistSchema.validate(req.body, options);
 
     if (error) {
-
         res.status(400).send({ message : error.message })
-
     } else {
-        const age = await getUserAge(uid);
+        const profileHandler = new ProfileService(app.locals.db)
+        const profile = await profileHandler.createStylistProfile(uid, value);
 
-        const stylistBody = {
-            '_id': uid,
-            'name': await getUserDisplayName(uid),
-            'role': role,
-            'age': age,
-            ...value
-        };
-
-        app.locals.db.collection('stylist').insertOne(stylistBody).then((doc) => {
-            res.status(200).send({ profile : stylistBody }) 
-
-        }).catch((error) => {
-            res.status(400).send([]) 
-        })
+        res.status(200).send({ profile : profile })
     }
 })
 
@@ -114,21 +105,25 @@ app.get('/stylist/:id', async(req, res) => {
     };
 
     const profileHandler = new ProfileService(app.locals.db);
+    const styleProfile = await profileHandler.getStylistProfile(stylistId);
 
-    await profileHandler.getStylistProfile(stylistId).then((doc) => {
-        res.status(200).send({ stylist : doc })
-    })
+    res.status(200).send({ profile : styleProfile });
 })
 
 app.post('/style-seeker', async(req, res) => {
     const auth = req.headers.authorization
-    const uid = await validateTokenId(auth)
+    const uid = await validateTokenId(auth);
+    const role = await getUserRole(uid);
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token...");
+        return;
+    }
 
-    const role = await getUserRole(uid)
-
-    if (role != "style-seeker") return
+    if (role != "style-seeker") {
+        res.status(403).send("You are not registered as a style seeker.")
+        return;
+    }
 
     const { error, value } = styleSeekerSchema.validate(req.body, options);
 
@@ -137,39 +132,27 @@ app.post('/style-seeker', async(req, res) => {
         res.status(400).send({ message : error.message })
 
     } else {
-       const age = await getUserAge(uid);
+        const profileHandler = new ProfileService(app.locals.db)
+        const profile = await profileHandler.createStyleSeekerProfile(uid, value);
 
-        const styleSeekerBody = {
-            '_id': uid,
-            'name': await getUserDisplayName(uid),
-            'role': role,
-            'age': age,
-            ...value
-        };
-
-        app.locals.db.collection('style-seeker').insertOne(styleSeekerBody).then((doc) => {
-            res.status(200).send({ profile : styleSeekerBody }) 
-
-        }).catch((error) => {
-            res.status(400).send({ message : error.message }) 
-        })
+        res.status(200).send({ profile : profile })
     }
-
 })
 
 app.get('/style-seeker/:id', async(req, res) => {
-    const auth = req.headers.authorization
-    const uid = await validateTokenId(auth)
+    const auth = req.headers.authorization;
+    const uid = await validateTokenId(auth);
+    const styleSeekerId = req.params.id
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token...")
+        return;
+    };
 
-    const paramsId = req.params.id
+    const profileHandler = new ProfileService(app.locals.db);
+    const styleSeekerProfile = await profileHandler.getStyleSeekerProfile(styleSeekerId);
 
-    app.locals.db.collection('style-seeker').findOne({'_id' : paramsId.toString() }).then((doc) => {
-        res.status(200).send({ profile : doc })
-    }).catch((error) => {
-        res.status(400).send([]) 
-    })
+    res.status(200).send({ profile : styleSeekerProfile });
 })
 
 /*
@@ -179,27 +162,26 @@ app.get('/bulk-stylists', async(req, res) => {
     const auth = req.headers.authorization
     const uid = await validateTokenId(auth)
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token...")
+        return;
+    };
 
     const page_token = req.query.page
-    const agg = [{ '$skip': Number(page_token) }, { '$limit': 2 }];
 
-     const pagDocuments = new Promise(async(resolve, reject) => {
-         const arr = []
-         await app.locals.db.collection('stylist').aggregate(agg).forEach((item) => { arr.push(item) }) 
-        resolve(arr);
-    }).then((items) => items)
+    const profileHandler = new ProfileService(app.locals.db);
+    const stylists = await profileHandler.getBulkStylists(Number(page_token));
 
-    res.status(200).send({ stylists : await pagDocuments , page_token: Number(page_token) + 1 })
+    res.status(200).send({ stylists: stylists, page_token: Number(page_token) })
 })
 
 /*
  * Create a match with user 
  */
  app.post('/matches', async(req, res) => {
-    const auth = req.headers.authorization
-    const uid = await validateTokenId(auth)
-    const role = await getUserRole(uid)
+    const auth = req.headers.authorization;
+    const uid = await validateTokenId(auth);
+    const role = await getUserRole(uid);
 
     if (uid == null) {
         res.status(401).send("Bad Token")
@@ -211,7 +193,7 @@ app.get('/bulk-stylists', async(req, res) => {
         return;
     };
 
-    const { error, value } = createMatchSchema.validate(req.body, options);
+    const { error , value } = createMatchSchema.validate(req.body, options);
 
     if (error) {
          res.status(400).send({ message : error.message })
@@ -227,11 +209,8 @@ app.get('/bulk-stylists', async(req, res) => {
                 res.status(403).send("Match already exists");
 
             } else {
-                matchHandler.createMatch(uid, value.stylist_uid).then((match) => {
-                    if (match) {
-                        res.status(200).send({ match : match }) 
-                    }
-                })
+                const match = await matchHandler.createMatch(uid, value.stylist_uid);
+                res.status(200).send({ match : match });
             }
         } else {
             res.status(403).send("This user is not a stylist")
@@ -246,86 +225,57 @@ app.get('/matches', async(req, res) => {
     const auth = req.headers.authorization
     const uid = await validateTokenId(auth)
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token")
+        return;
+    };
 
-    const role = (await getUserRole(uid)).replace(/-/g, '_');
-    const formatRole = `${role}_uid`
+    const matchHandler = new MatchService(app.locals.db);
+    const allMatches = await matchHandler.getAllMatches(uid);
 
-    const filterObj = {}
-    filterObj[formatRole] = uid;
-    
-    const allMatches = new Promise(async(resolve, reject) => {
-        const arr = []
-        await app.locals.db.collection('matches').find(filterObj).forEach((item) => { arr.push(item) }) 
-       resolve(arr);
-    }).then((items) => items)
-
-    res.status(200).send({ matches : await allMatches })
+    res.status(200).send({ matches : allMatches });
 })
 
 /*
- * Get Matches Id
+ * Get Specific Match Id
  */
 app.get('/matches/:id', async(req, res) => {
     const auth = req.headers.authorization
     const uid = await validateTokenId(auth)
-    
-    if (uid == null) return;
 
     const matchId = req.params.id
-    const role = (await getUserRole(uid)).replace(/-/g, '_');
-    const formatRole = `${role}_uid`
 
-    const filterObj = {}
-    filterObj[formatRole] = uid;
-    filterObj[`_id`] = new mongo.ObjectID(matchId)
-    
-    const allMatches = new Promise(async(resolve, reject) => {
-        const arr = []
-        await app.locals.db.collection('matches').find(filterObj).forEach((item) => { arr.push(item) }) 
-       resolve(arr);
-    }).then((items) => items)
+    if (uid == null) {
+        res.status(401).send("Bad Token")
+        return;
+    };
 
-    res.status(200).send({ match : await allMatches })
+    const matchHandler = new MatchService(app.locals.db);
+    const match = await matchHandler.getMatch(uid, matchId);
+
+    res.status(200).send({ match : match })
 })
 
 /*
  * Approve a match with a style-seeker
  */
 app.post('/matches/:id', async(req, res) => {
-    const auth = req.headers.authorization
-    const uid = await validateTokenId(auth)
+    const auth = req.headers.authorization;
+    const uid = await validateTokenId(auth);
+
+    const matchId = req.params.id;
     
-    if (uid == null) return;
+    if (uid == null) {
+        res.status(401).send("Bad Token")
+        return;
+    };
 
-    const matchId = req.params.id
-    const formatRole = `stylist_uid`
+    const matchHandler = new MatchService(app.locals.db);
+    const approvedMatch = await matchHandler.approveMatch(uid, matchId);
 
-    const filterObj = {}
-    filterObj[formatRole] = "P1Akn1HELtXtz8tkDxuko1elwFt2";
-    filterObj[`_id`] = new mongo.ObjectID(matchId)
-    
-    var getMatchDetails = new Promise(async(resolve, reject) => {
-        return await app.locals.db.collection('matches').findOne(filterObj).then((doc) => resolve(doc)) 
-    }).then((items) => items)
-    
-    var matchDetails = await getMatchDetails;
+    console.log(approvedMatch)
 
-    if (matchDetails.approved) {
-
-        res.status(403).send("This match was already approved!")
-
-    } else {
-        matchDetails.approved = true
-
-        const chatService = new ChatService(app.locals.db)
-    
-        await app.locals.db.collection('matches').updateOne(filterObj, { $set: matchDetails }, { upsert: false }).then((res) => {
-            chatService.createChat(matchDetails.style_seeker_uid, matchDetails.stylist_uid)
-        })
-        res.status(200).send({ match : matchDetails })
-    }
-
+    res.status(200).send({ match : await approvedMatch });
 })
 
 /*
@@ -461,10 +411,10 @@ app.get('/chats/:id', async(req, res) => {
         return;
     };
 
-    // if (role !== "stylist") {
-    //     res.status(403).send("You cannot make outfits.")
-    //     return;
-    // };
+    if (role !== "stylist") {
+        res.status(403).send("You cannot make outfits.")
+        return;
+    };
 
     const { error, value } = createOutfit.validate(req.body, options);
 
