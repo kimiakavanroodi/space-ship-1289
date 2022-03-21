@@ -29,5 +29,5 @@ The information for the available APIs are in Postman listed under the project c
 Here are the services and features that are available by this system. I have marked which have been completed and which still needs work.
 
 - [x] Card & Finance (Save card information for users)
-- [ ] 
+- [ ] asfads
 - [ ] Add delight to the experience when all tasks are complete :tada:
