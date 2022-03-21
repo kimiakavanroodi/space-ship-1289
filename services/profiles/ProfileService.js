@@ -8,8 +8,9 @@ class ProfileService {
     }
 
     /**
-     * 
-     * @param {string} stylist_uid 
+     * Get a stylist's profile using uid
+     * @param {string} stylist_uid uid of stylist
+     * Returns an object of the stylist profile
      */
     getStylistProfile = async(stylist_uid) => {
         const getStylistProfile = new Promise(async(resolve, reject) => {
@@ -20,6 +21,14 @@ class ProfileService {
         }).then((doc) => doc);
 
         return await getStylistProfile;
+    };
+
+    /**
+     * Creates a sty
+     * @param {object} profile 
+     */
+    createStylistProfile = async(profile) => {
+
     };
 
     /**

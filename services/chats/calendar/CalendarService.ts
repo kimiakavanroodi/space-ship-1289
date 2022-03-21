@@ -71,7 +71,7 @@ class CalendarService extends ChatService {
     deleteCalendar = async(calendarId) => {
         var chatDetails = await this.getChat(this.chatId)
 
-        const updatedCalendar = chatDetails.messages.filter((item, idx, arr) => item._id !== calendarId)
+        const updatedCalendar = chatDetails.calendar_invites.filter((item, idx, arr) => item._id !== calendarId)
 
         chatDetails.calendar_invites = updatedCalendar;
 

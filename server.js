@@ -107,7 +107,6 @@ app.get('/stylist/:id', async(req, res) => {
     const auth = req.headers.authorization;
     const uid = await validateTokenId(auth);
     const stylistId = req.params.id
-    console.log(stylistId)
     
     if (uid == null) {
         res.status(401).send("Bad Token...")
@@ -511,6 +510,30 @@ app.get('/chats/:id', async(req, res) => {
     };
 })
 
+
+/**
+ * Delete a calendar invite endpoint
+ */
+ app.delete('/chats/:id/calendar/:cId', async(req, res) => {
+    const auth = req.headers.authorization
+    const uid = await validateTokenId(auth)
+
+    const chatId = req.params.id;
+    const calendarId = req.params.cId;
+
+    if (uid == null) {
+        res.status(401).send("Bad token");
+        return;
+    };
+
+    const calendarHandler = new CalendarService(app.locals.db, uid, chatId);
+
+    calendarHandler.deleteCalendar(calendarId).then((resp) => {
+        res.status(200).send({ chat : resp })
+    });
+})
+
+
 /**
  * DON'T TOUCH THIS PART
  */
@@ -529,8 +552,6 @@ MongoClient.connect('DB', async(err, db) => {
             credential: admin.credential.cert(serviceAccount)
         });
         
-        console.log(app.locals)
-
         console.log(`Node.js app is listening at http://localhost:${PORT}`);
     });
 })
