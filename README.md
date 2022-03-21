@@ -2,7 +2,7 @@
 
 ## How to Start the Server
 
-### Runs on http://localhost:8080
+### App runs on http://localhost:8080
 
 1. Please be sure to install the node modules.
 ```
@@ -26,3 +26,8 @@ The information for the available APIs are in Postman listed under the project c
 ## Test Accounts
 
 ## Features & Services
+Here are the services and features that are available by this system. I have marked which have been completed and which still needs work.
+
+- [x] Card & Finance (Save card information for users)
+- [ ] 
+- [ ] Add delight to the experience when all tasks are complete :tada:
