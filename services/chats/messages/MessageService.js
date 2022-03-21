@@ -16,7 +16,7 @@ class MessageService extends ChatService {
      * @param {string} chat_id  chat Id
      * @param {string} message message being sent
      * returns the newly-created message object
-     */
+     **/
     createMessage = async(message) => {
         const role = await getUserRole(this.uid);
         const displayName = await getUserDisplayName(this.uid);
@@ -40,17 +40,47 @@ class MessageService extends ChatService {
     };
 
     /**
-     * 
-     * @param {\} messageId 
-     */
-    deleteMessage = async(messageId) => {};
+     * Delete a message using their id and update the chat
+     * @param {string} messageId id of a message
+     * Returns the updated chat object
+     **/
+    deleteMessage = async(message_id) => {
+        var chatDetails = await this.getChat(this.chatId)
+
+        const updatedMessages = chatDetails.messages.filter((item, idx, arr) => item._id !== message_id)
+
+        chatDetails.messages = updatedMessages;
+
+        const updatedChat = await this.updateChat(this.chatId, chatDetails);
+        return updatedChat
+    };
 
     /**
-     * 
-     * @param {*} messageId 
-     * @param {*} message 
-     */
-    updateMessage = async(messageId, message) => {};
+     * Update a message using their id and updated message 
+     * @param {string} messageId id of message
+     * @param {object} message message object {"message": string }
+     * Returns the updated chat object
+     **/
+     updateMessage = async(message_id, chat_content) => {
+        var chatDetails = await this.getChat(this.chatId)
+
+        const messagesCopy = chatDetails.messages.map((item, idx) => {
+            if (item._id === message_id) {
+                delete item.message
+                return {
+                    ...item,
+                    ...chat_content
+                };
+            }
+            return item
+        });
+
+        chatDetails.messages = messagesCopy;
+        const updatedChat = await this.updateChat(this.chatId, chatDetails);
+
+        return updatedChat;
+    };
+
 };
 
 module.exports = MessageService;

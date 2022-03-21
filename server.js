@@ -397,6 +397,58 @@ app.get('/chats/:id', async(req, res) => {
 })
 
 /**
+ * Post a new message in the chat between the two users
+ */
+ app.delete('/chats/:id/message/:mId', async(req, res) => {
+    const auth = req.headers.authorization
+    const uid = await validateTokenId(auth)
+
+    const chatId = req.params.id;
+    const messageId = req.params.mId
+
+    if (uid == null) {
+        res.status(401).send("Bad token");
+        return;
+    };
+
+    const messageHandler = new MessageService(app.locals.db, uid, chatId);
+
+    messageHandler.deleteMessage(messageId).then((resp) => {
+        res.status(200).send({ chat : resp })
+    });
+})
+
+/**
+ * Update a message in the chat between the two users
+ */
+ app.put('/chats/:id/message/:mId', async(req, res) => {
+    const auth = req.headers.authorization
+    const uid = await validateTokenId(auth)
+
+    const chatId = req.params.id;
+    const messageId = req.params.mId
+
+    if (uid == null) {
+        res.status(401).send("Bad token");
+        return;
+    };
+
+    const { error, value } = createMessageSchema.validate(req.body, options);
+
+    if (error) {
+
+        res.status(400).send(error.message);
+
+    } else {
+        const messageHandler = new MessageService(app.locals.db, uid, chatId);
+
+        messageHandler.updateMessage(messageId, value).then((resp) => {
+            res.status(200).send({ chat : resp })
+        });
+    }
+})
+
+/**
  * Post a new outfit in the chat between stylist and style-seeker
  */
  app.post('/chats/:id/outfit', async(req, res) => {

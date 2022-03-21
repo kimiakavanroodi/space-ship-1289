@@ -61,13 +61,23 @@ class CalendarService extends ChatService {
      * @param {*} calendarId 
      * @param {*} calendar 
      */
-    createGoogleInvite = async(calendar) => {};
+    createGoogleInvite = async(calendarId, calendar) => {};
 
     /**
-     * 
-     * @param {*} calendarId 
+     * Delete a calendar invite based on the calendar id
+     * @param {*} calendarId id of calendar
+     * Returns the updated chat object
      */
-    deleteCalendar = async(calendarId) => {};
+    deleteCalendar = async(calendarId) => {
+        var chatDetails = await this.getChat(this.chatId)
+
+        const updatedCalendar = chatDetails.messages.filter((item, idx, arr) => item._id !== calendarId)
+
+        chatDetails.calendar_invites = updatedCalendar;
+
+        const updatedChat = await this.updateChat(this.chatId, chatDetails);
+        return updatedChat
+    };
 
     /**
      * 
