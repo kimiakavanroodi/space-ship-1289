@@ -11,7 +11,7 @@ module.exports.validateTokenId = async(tokenId) => {
         console.log("Bad token")
         return null;
     })
-}
+};
 
 /**
  * Retrieve user role from metadata in firebase auth
@@ -72,4 +72,3 @@ module.exports.getUserDisplayName = async(uid) => {
         return null;
     })
 };
-

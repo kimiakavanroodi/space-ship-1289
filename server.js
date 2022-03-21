@@ -7,7 +7,6 @@ const MongoClient = require('mongodb').MongoClient
 var mongo = require('mongodb');
 
 const admin = require("firebase-admin");
-var serviceAccount = require("/Users/kimiakavanroodi/Documents/create-x-capstone-backend/match-84338-firebase-adminsdk-pkzko-033fc5925d.json");
 
 const { validateTokenId, getUserRole, getUserAge, getUserDisplayName } = require('./config/Firebase');
 const { userAccountSchema, stylistSchema, styleSeekerSchema } = require('./models/profiles/UserValidation');
@@ -21,6 +20,7 @@ const { createCalendarInvite } = require('./models/chats/calendar/CalendarValida
 const CalendarService = require('./services/chats/calendar/CalendarService.ts');
 const { createOutfit } = require('./models/chats/outfits/OutfitValidation');
 const OutfitService = require('./services/chats/outfits/OutfitService');
+const { getSecret } = require('./config/SecretManager');
 
 
 const options = {
@@ -492,16 +492,20 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 8080;
 
-MongoClient.connect('DB', async(err, db) => {
-    http.listen(PORT, async() => {
+getSecret('mongo-db-connection').then((uri) => {
+    MongoClient.connect(uri, async(err, db) => {
+
+        const serviceAccount = await getSecret("json-secret-service-account");
 
         app.locals.db = db.db('match-it')
         app.locals.admin = admin;
 
         admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
+            credential: admin.credential.cert(JSON.parse(serviceAccount))
         });
-        
-        console.log(`Node.js app is listening at http://localhost:${PORT}`);
-    });
+
+        http.listen(PORT, async() => {
+            console.log(`Node.js app is listening at http://localhost:${PORT}`);
+        });
+    })
 })

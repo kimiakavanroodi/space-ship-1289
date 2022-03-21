@@ -121,9 +121,7 @@ class MatchService {
                     resolve(match)
                 })
             }).then((doc) => doc);
-
-            console.log(updateMatch)
-
+            
             return await updateMatch;
         }
     };
