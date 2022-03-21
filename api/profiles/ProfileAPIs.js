@@ -19,8 +19,6 @@ const createAccount = async(req, res) => {
 
     } else {
 
-        console.log(accountBody)
-
         const accountBody = {
             email: value.email,
             password: value.password,
@@ -28,10 +26,7 @@ const createAccount = async(req, res) => {
         };
 
         admin.auth().createUser(accountBody).then((user) => {
-
-            admin.auth().setCustomUserClaims(user.uid, { role : value.role }) // set role in metadata
-            admin.auth().setCustomUserClaims(user.uid, { age : value.age }) // set role in metadata
-            admin.auth().setCustomUserClaims(user.uid, { onboarding : false }) // has not completed onboarding
+            admin.auth().setCustomUserClaims(user.uid, { role : value.role, age: value.age, onboarding: false }) // set role in metadata
 
             res.status(200).send({ message : "Success!" })
          }).catch((error) => {
@@ -41,6 +36,7 @@ const createAccount = async(req, res) => {
     }
 };
  
+// create a stylist profile endpoint
  const createStylistProfile = async(req, res) => {
      const auth = req.headers.authorization
      const uid = await validateTokenId(auth)
@@ -68,6 +64,7 @@ const createAccount = async(req, res) => {
      }
  };
  
+ // get a stylist profile endpoint
  const getStylistProfile = async(req, res) => {
      const auth = req.headers.authorization;
      const uid = await validateTokenId(auth);
@@ -84,7 +81,7 @@ const createAccount = async(req, res) => {
      res.status(200).send({ profile : styleProfile });
  };
  
- //
+ // create a style seeker profile endpoint
  const createStyleSeekerProfile = async(req, res) => {
      const auth = req.headers.authorization
      const uid = await validateTokenId(auth);
@@ -115,7 +112,7 @@ const createAccount = async(req, res) => {
  };
  
 /*
-*
+* get a style seeker profile endpoint
 */
 const getStyleSeekerProfile = async(req, res) => {
      const auth = req.headers.authorization;

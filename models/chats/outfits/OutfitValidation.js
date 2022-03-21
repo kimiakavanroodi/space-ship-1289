@@ -1,7 +1,8 @@
 const { optional, array } = require("joi");
 const Joi = require("joi")
 
-module.exports.createOutfit = Joi.object({
+// calendar schema for outfit body
+module.exports.createOutfitSchema = Joi.object({
     collage_type: Joi.string().required(),
     liked: Joi.boolean(),
     pieces: Joi.array().items({

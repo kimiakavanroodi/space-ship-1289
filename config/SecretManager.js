@@ -2,9 +2,9 @@ const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 const client = new SecretManagerServiceClient();
 
 /**
- * 
- * @param {*} secret 
- * @returns 
+ * Grabs the secrets from the Google Secret Manager 
+ * @param {string} secret pass in the name of the secret
+ * @returns the decoded secret
  */
 async function getSecret(secret) {
     const name = `projects/117516734307/secrets/${secret}/versions/1`;

@@ -9,6 +9,7 @@ class ProfileService {
     constructor(db) {
         this.db = db;
     };
+
     /**
      * Creates a style-seeker profile after sign up
      * @param {object} profile object of the style seeker profile
@@ -18,16 +19,19 @@ class ProfileService {
         const age = await getUserAge(uid);
         const name = await getUserDisplayName(uid);
 
+        // create a new style seeker object
         const styleSeekerBody = {
             '_id': uid,
             'name': name,
             'role': "style-seeker",
             'age': age,
-            ...profile
+            ...profile // copy over contents from the request body
         };
 
+        // add a new profile into the database
         const createStyleSeekerProfile = new Promise(async(resolve, reject) => {
             await this.db.collection('style-seeker').insertOne(styleSeekerBody).then((doc) => {
+                // return back the style seeker object
                 resolve(styleSeekerBody);
             })
         }).then((doc) => doc);
@@ -41,6 +45,8 @@ class ProfileService {
      * Returns an object of the stylist profile
      **/
     getStyleSeekerProfile = async(style_seeker_uid) => {
+
+        // grab the style seeker profile from the database
         const getStyleSeekerProfile = new Promise(async(resolve, reject) => {
             await this.db.collection('style-seeker').findOne({ '_id' : style_seeker_uid }).then((doc) => {
                 resolve(doc)
@@ -74,16 +80,19 @@ class ProfileService {
         const age = await getUserAge(uid);
         const name = await getUserDisplayName(uid);
 
+        // create a new stylist object
         const stylistBody = {
             '_id': uid,
             'name': name,
             'role': "stylist",
             'age': age,
-            ...profile
+            ...profile // copy over contents from the request body
         };
 
+        // add this object into the database 
         const createStylistProfile = new Promise(async(resolve, reject) => {
             await this.db.collection('stylist').insertOne(stylistBody).then((doc) => {
+                // return the object
                 resolve(stylistBody);
             })
         }).then((doc) => doc);
@@ -96,11 +105,15 @@ class ProfileService {
      * Returns an array of stylist profile objects
      **/
     getBulkStylists = async(page_token) => {
+        // create a query from the database to get a certain page
         const agg = [{ '$skip': Number(page_token) }, { '$limit': 2 } ];
         
+        // get the documents from the database
         const pageDocuments = new Promise(async(resolve, reject) => {
             const arr = []
             await this.db.collection('stylist').aggregate(agg).forEach((item) => { arr.push(item) }) 
+
+            // return an array of Stylist objects
            resolve(arr);
         }).then((items) => items)
         
