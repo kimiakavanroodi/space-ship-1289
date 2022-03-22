@@ -19,13 +19,23 @@ node server.js
 ```
 
 ## API Documentation
-The information for the available APIs are in Postman listed under the project called match-it. They have also been listed and described below:
+The information for the available APIs are in **Postman** listed under the project called match-it. They have also been listed and described below:
 
-**GET** /matches/
+### Match Service
+**GET** /matches
+**GET** /matches/:id
+**POST** /matches
+**POST** /matches/:id
+
+
 
 ## Test Accounts
 
+## Deployments
+We will use Google Cloud App Engine. That will come later.
+
 ## Dev & Prod Versions
+We have two separate branches for dev and prod version. We will use versioning tags to mark each version for prod before rolling it out. We will use Google Cloud App Engine & Circle CI to manage prod/dev versions on instances. (Coming soon)
 
 ## Features & Services
 Here are the services and features that are available by this system. I have marked which have been completed and which still needs work.
