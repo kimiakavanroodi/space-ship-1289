@@ -20,10 +20,10 @@ node server.js
 
 ## Codebase Walkthrough
 
-- **API** Folder: carries information about the available routes related to the services (matches, chats, profiles, etc). You can create GET/PUT/DELETE/POST endpoints for whatever service.
-- **CONFIG** Folder: carries secret manager and firebase authentication services. This includes helper functions that relate to validating and getting user tokens, getting user internal metadata, getting database secretes, etc.
-- **MODELS** Folder: carries schemas or models for certain objects. When a request is recieved, the body of that request should be validated against its matching schema. This prevents people from sending unstructured data or unrelated objects into our database.
-- **SERVICES** Folder: carries business logic of our services. This includes OOP (SOLID Principles) of classes for our services, and within these classes, there are methods related to that service. An example is our ProfileService where we have methods that create profiles for our users.
+- **API**: carries information about the available routes related to the services (matches, chats, profiles, etc). You can create GET/PUT/DELETE/POST endpoints for whatever service.
+- **CONFIG**: carries secret manager and firebase authentication services. This includes helper functions that relate to validating and getting user tokens, getting user internal metadata, getting database secretes, etc.
+- **MODELS**: carries schemas or models for certain objects. When a request is recieved, the body of that request should be validated against its matching schema. This prevents people from sending unstructured data or unrelated objects into our database.
+- **SERVICES**: carries business logic of our services. This includes OOP (SOLID Principles) of classes for our services, and within these classes, there are methods related to that service. An example is our ProfileService where we have methods that create profiles for our users.
 
 ## API Documentation
 The information for the available APIs are in **Postman** listed under the project called match-it. They have also been listed and described below:
@@ -37,6 +37,23 @@ The information for the available APIs are in **Postman** listed under the proje
 ### Chat Service
 - **GET** /chats
 - **GET** /chats/:id
+
+- **PUT** /chats/:id/message/:mId
+- **DELETE** /chats/:id/message/:mId
+- **POST** /chats/:id/message
+
+- **POST** /chats/:id/calendar
+- **DELETE** /chats/:id/calendar/:cId
+
+- **POST** /chats/:id/outfit
+
+### Profile Service
+- **GET** /stylist/:id
+- **POST** /stylist
+- **GET** /style-seeker/:id
+- **POST** /style-seeker
+- **GET** /bulk-stylists
+- **POST** /account
 
 ## Test Accounts
 
