@@ -46,6 +46,7 @@ The information for the available APIs are in **Postman** listed under the proje
 
 ### Profile Service
 - **GET** /stylist/:id
+- **GET** /role
 - **POST** /stylist
 - **GET** /style-seeker/:id
 - **POST** /style-seeker
