@@ -2,6 +2,7 @@ const { validateTokenId, getUserRole } = require("../../config/Firebase");
 const { stylistSchema, styleSeekerSchema, userAccountSchema } = require("../../models/profiles/UserValidation");
 const ProfileService = require("../../services/profiles/ProfileService");
 const admin = require("firebase-admin");
+var firebaseAuth = require("firebase/auth");
 
 const options = {
     abortEarly: false, // include all errors
@@ -150,13 +151,46 @@ const getBulkStylists = async(req, res) => {
      res.status(200).send({ stylists: stylists, page_token: Number(page_token) + 1 })
  };
 
+ // get a user's role
+ const seekUserRole = async(req, res) => {
+    const auth = req.headers.authorization
+    const uid = await validateTokenId(auth)
+    
+    if (uid == null) {
+        res.status(401).send("Bad Token...")
+        return;
+    };
+
+    const user_role = await getUserRole(uid);
+
+    res.status(200).send({ role : user_role });
+};
+
+
+ // TEST API - get user token for ease of mind
+ const getAccountToken = async(req, res) => {
+     let email = req.body.email;
+     let password = req.body.password;
+
+     const getFirebaseToken = new Promise(async(resolve, reject) => {
+        return await firebaseAuth.signInWithEmailAndPassword(email, password).then(async(user) => {
+           resolve(await user.user.getIdToken(true));
+         })
+    }).then(token => token);
+
+    res.status(200).send({ "token" : await getFirebaseToken })
+};
+
+
  const profileRoutes = {
     "createStylistProfile": createStylistProfile,
     "getStylistProfile": getStylistProfile,
     "getBulkStylists": getBulkStylists,
     "getStyleSeekerProfile": getStyleSeekerProfile,
     "createAccount": createAccount,
-    "createStyleSeekerProfile": createStyleSeekerProfile
+    "createStyleSeekerProfile": createStyleSeekerProfile,
+    "getUserRole": seekUserRole,
+    "getAccountToken": getAccountToken
  };
 
  module.exports = profileRoutes;
