@@ -33,10 +33,14 @@ const createOutfit = async(req, res) => {
         res.status(400).send(error.message);
 
     } else {
+        let io = req.app.get('socketio')
+
         const outfitHandler = new OutfitService(req.app.locals.db, uid, chatId);
         const outfit = await outfitHandler.createOutfit(value);
 
-        res.status(200).send({ outfit : outfit })
+        io.in(`chats-${chatId}`).emit("UPDATE_CHAT", outfit);
+
+        res.status(200).send({ chat : outfit })
     };
 };
 
