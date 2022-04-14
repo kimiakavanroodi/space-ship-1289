@@ -1,5 +1,6 @@
 const { validateTokenId } = require("../../../config/Firebase");
 const { createCalendarInvite } = require("../../../models/chats/calendar/CalendarValidation");
+const CalendarService = require("../../../services/chats/calendar/CalendarService");
 
 /**
  * Create a new calendar in the chat between the two users

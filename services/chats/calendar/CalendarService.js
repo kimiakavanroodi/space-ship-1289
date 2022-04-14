@@ -27,6 +27,7 @@ class CalendarService extends ChatService {
         // create a new calendar object & add new details
         const calendarBody = {
             _id: uuidv4().toString(), // generate a unique id
+            date_time: new Date().toISOString(),
             sender: { 
                 role: role,
                 uid: this.uid,
