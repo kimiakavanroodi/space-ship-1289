@@ -6,6 +6,7 @@ module.exports.userAccountSchema = Joi.object({
     email: Joi.string().required(),
     name: Joi.string().required().min(3).max(100),
     age: Joi.number().required(),
+    profile_img: Joi.string().required(),
     password: Joi.string().required(),
     role: Joi.string().valid('stylist', 'style-seeker').required()
 });

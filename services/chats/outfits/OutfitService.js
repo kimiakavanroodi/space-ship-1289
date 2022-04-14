@@ -20,7 +20,7 @@ class OutfitService extends ChatService {
      */
     createOutfit = async(outfit) => {
         // copy over the outfit contents to object and create new id
-        const outfitBody = {'_id': uuidv4(), ...outfit};
+        const outfitBody = {'_id': uuidv4(), 'has_paid': false, ...outfit};
 
         // get chat details of chat id
         var chatDetails = await this.getChat(this.chatId);

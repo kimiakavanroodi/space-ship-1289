@@ -6,6 +6,7 @@ const chatRoutes = require("./chats/ChatAPIs");
 const messageRoutes = require("./chats/messages/MessageAPIs");
 const calendarRoutes = require("./chats/calendar/CalendarAPIs");
 const outfitRoutes = require("./chats/outfits/OutfitAPIs");
+const cardRoutes = require("./card/CardAPIs");
 
 // api routes
 module.exports = function(app) {
@@ -15,6 +16,7 @@ module.exports = function(app) {
     // video chat routes
 
     // card routes
+    app.post('/card', cardRoutes.createCard);
 
     // chat routes
     app.get('/chats/:id', chatRoutes.getChat);
@@ -32,6 +34,7 @@ module.exports = function(app) {
 
     // chat outfit routes
     app.post('/chats/:id/outfit', outfitRoutes.createOutfit);
+    // app.post('/chats/:id/outfit/:oId/pay', outfitRoutes.createOutfit);
 
     // match routes
     app.get('/matches', matchRoutes.getAllMatches)

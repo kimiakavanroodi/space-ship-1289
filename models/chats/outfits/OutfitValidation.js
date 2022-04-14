@@ -6,6 +6,9 @@ module.exports.createOutfitSchema = Joi.object({
     collage_type: Joi.string().required(),
     liked: Joi.boolean(),
     pieces: Joi.array().items({
+        name: Joi.string().required(),
+        img_url: Joi.string().required(),
+        note: Joi.string().required(),
         type: Joi.string().required(),
         link: Joi.string().required(),
         brand: Joi.string().required(),
