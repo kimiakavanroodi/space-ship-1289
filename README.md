@@ -28,13 +28,13 @@ node server.js
 ## API Documentation
 The information for the available APIs are in **Postman** listed under the project called match-it. They have also been listed and described below:
 
-### Match Service
+## Match Service
 - **GET** /matches
 - **GET** /matches/:id
 - **POST** /matches
 - **POST** /matches/:id
 
-### Chat Service
+## Chat Service
 - **GET** /chats
 - **GET** /chats/:id
 - **PUT** /chats/:id/message/:mId
@@ -47,7 +47,7 @@ The information for the available APIs are in **Postman** listed under the proje
 ## Card Service
 - **POST** /card
 
-### Profile Service
+## Profile Service
 - **GET** /stylist/:id
 - **GET** /role
 - **POST** /stylist
