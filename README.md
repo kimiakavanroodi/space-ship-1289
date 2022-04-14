@@ -44,6 +44,9 @@ The information for the available APIs are in **Postman** listed under the proje
 - **DELETE** /chats/:id/calendar/:cId
 - **POST** /chats/:id/outfit
 
+## Card Service
+- **POST** /card
+
 ### Profile Service
 - **GET** /stylist/:id
 - **GET** /role
@@ -62,16 +65,16 @@ We have two separate branches for dev and prod version. We will use versioning t
 ## Features Required
 Here are the services and features that are available by this system. I have marked which have been completed and which still needs work.
 
-- [ ] Card & Finance (Save card information for users)
+- [X] Card & Finance (Save card information for users)
 - [ ] Stripe integration
 - [X] Retrieve a bulk feed of stylists 
 - [X] Create matches with stylists
 - [X] Approve matches by stylists 
-- [ ] **Live** messaging & video chats
+- [X] **Live** messaging & video chats
 - [X] Store chat information in database
 - [X] Create profiles for users (private vs. public information)
 - [X] Create outfits & store in database
 - [X] Create calendar invites & store in database
 - [ ] Google/Outlook/Apple Calendar Integration
-- [ ] Match-making & questionnaire microservice
+- [X] Match-making & questionnaire microservice
 
