@@ -119,6 +119,11 @@ class ProfileService {
         
         return await pageDocuments;
     };
+
+    getStylistRate = async(stylist_uid) => {
+        return (await this.getStylistProfile(stylist_uid))['rate']['cost']
+    };
+
     /**
      * Checks to see if a user is a stylist
      * @param {string} stylist_uid stylist uid

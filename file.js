@@ -21,7 +21,7 @@ firebase.initializeApp(firebaseConfig);
 const app = firebaseAdmin.getAuth()
 
 
-firebaseAdmin.signInWithEmailAndPassword(app, "testing-stylist-2@gmail.com", "kimia123456").then(async(user) => {
+firebaseAdmin.signInWithEmailAndPassword(app, "testing-stylist-12345@gmail.com", "kimia123456").then(async(user) => {
     console.log(await (await user.user.getIdTokenResult(true)).token)
     console.log(user.user.uid)
 })

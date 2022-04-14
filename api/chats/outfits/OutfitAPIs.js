@@ -1,5 +1,6 @@
 const { validateTokenId, getUserRole } = require("../../../config/Firebase");
 const { createOutfitSchema } = require("../../../models/chats/outfits/OutfitValidation");
+const CardService = require("../../../services/card/CardService");
 const OutfitService = require("../../../services/chats/outfits/OutfitService");
 
 const options = {
@@ -14,7 +15,7 @@ const options = {
 const createOutfit = async(req, res) => {
     const auth = req.headers.authorization
     const uid = await validateTokenId(auth)
-    const role = await getUserRole(auth);
+    const role = await getUserRole(uid);
     const chatId = req.params.id;
 
     if (uid == null) {
@@ -22,6 +23,7 @@ const createOutfit = async(req, res) => {
         return;
     };
 
+    console.log(role)
     if (role !== "stylist") {
         res.status(403).send("You cannot make outfits.")
         return;
@@ -40,8 +42,36 @@ const createOutfit = async(req, res) => {
     };
 };
 
+const payOutfit = async(req, res) => {
+    let auth = req.headers.authorization
+    let uid = await validateTokenId(auth)
+
+    let chatId = req.params.id;
+    let outfitId = req.params.oId;
+
+    if (uid == null) {
+        res.status(401).send("Bad token");
+        return;
+    }
+
+    const outfitHandler = new OutfitService(req.app.locals.db, uid, chatId);
+    const cardHandler = new CardService(req.app.locals.db, uid);
+
+    const allOutfits = await outfitHandler.getAllOutfits();
+
+    let stylist_uid = allOutfits['stylist_uid'];
+    let stylist_seeker_uid = allOutfits['style_seeker_uid'];
+
+    let stylist_rate = allOutfits['stylist_rate'];
+
+    const outfit = await outfitHandler.seeOutfit(uid, outfitId);
+
+    res.status(200).send({ outfit : outfit })
+};
+
 const outfitRoutes = {
     "createOutfit": createOutfit,
+    "payOutfit": payOutfit
 }
 
 module.exports = outfitRoutes

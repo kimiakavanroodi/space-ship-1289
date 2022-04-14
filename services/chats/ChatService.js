@@ -2,6 +2,7 @@ const { crypto } = require("crypto");
 const { ObjectID } = require("mongodb");
 const { getUserRole, getUserDisplayName } = require("../../config/Firebase");
 const { v4: uuidv4 } = require('uuid');
+const ProfileService = require("../profiles/ProfileService");
 
 /**
  * Chat Service that allows style-seekers & stylists pass information to each other (outfits, messafes, etc)
@@ -99,16 +100,16 @@ class ChatService {
      */
     createChat = async(style_seeker_uid, stylist_uid) => {
 
+        const profileHandler = new ProfileService(this.db);
+        const stylistRate = await profileHandler.getStylistRate(stylist_uid);
+
         // create a new chat object with default values
         const chatBody = {
             stylist_uid: stylist_uid,
             style_seeker_uid: style_seeker_uid,
             messages: [],
             calendar_invites: [],
-            payment_details: {
-                balance: 0,
-                is_paid: 0,
-            },
+            stylist_rate: stylistRate,
             outfits: [],
             video_chats: []
         };

@@ -34,7 +34,7 @@ module.exports = function(app) {
 
     // chat outfit routes
     app.post('/chats/:id/outfit', outfitRoutes.createOutfit);
-    // app.post('/chats/:id/outfit/:oId/pay', outfitRoutes.createOutfit);
+    app.post('/chats/:id/outfit/:oId/pay', outfitRoutes.payOutfit);
 
     // match routes
     app.get('/matches', matchRoutes.getAllMatches)

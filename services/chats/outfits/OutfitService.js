@@ -34,6 +34,38 @@ class OutfitService extends ChatService {
     };
 
     /**
+     * Pay and see the outfit to give style-seeker fit
+     * @param {string} style_seeker_uid uid of style_seeker
+     * @returns the updated object of the outfit been seen
+     */
+    seeOutfit = async(outfitId) => {
+
+        // get outfit details such as rate and stylist id 
+        const chat = (await this.getChat(this.chatId));
+
+        chat.outfits.filter((val, idx, arr) => {
+            if (val._id === outfitId) {
+                val.has_paid = true;
+            }
+        });
+
+        const updatedChat = await this.updateChat(this.chatId, chat);
+
+        return updatedChat;
+    };
+
+     /**
+     * Pay and see the outfit to give style-seeker fit
+     * @param {string} style_seeker_uid uid of style_seeker
+     * @returns the updated object of the outfit been seen
+     */
+    getAllOutfits = async() => {
+        const chat = (await this.getChat(this.chatId));
+
+        return chat;
+    };
+
+    /**
      * Delete an outfit using the outfit id
      * @param {string} outfitId 
      * Returns the deleted Outfit object
