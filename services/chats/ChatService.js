@@ -107,6 +107,8 @@ class ChatService {
         const chatBody = {
             stylist_uid: stylist_uid,
             style_seeker_uid: style_seeker_uid,
+            stylist_profile: await profileHandler.getStylistProfile(stylist_uid),
+            style_seeker_profile: await profileHandler.getStyleSeekerProfile(style_seeker_uid),
             messages: [],
             calendar_invites: [],
             stylist_rate: stylistRate,

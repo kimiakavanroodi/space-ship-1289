@@ -3,6 +3,7 @@ const { Console } = require("console");
 const { ObjectID } = require("mongodb");
 const { getUserRole } = require("../../config/Firebase");
 const ChatService = require("../chats/ChatService");
+const ProfileService = require("../profiles/ProfileService");
 
 /*
  * Match Service where stylists and style-seekers interact & make matches!
@@ -42,10 +43,14 @@ class MatchService {
      **/
     createMatch = async(style_seeker_uid, stylist_uid) => {
 
+        const profileHandler = new ProfileService(this.db);
+
         // create a new match object using style-seeker and stylist ids
         const matchBody = {
             style_seeker_uid: style_seeker_uid,
             stylist_uid: stylist_uid,
+            stylist_profile: await profileHandler.getStylistProfile(stylist_uid),
+            style_seeker_profile: await profileHandler.getStyleSeekerProfile(style_seeker_uid),
             approved: false
         };
 

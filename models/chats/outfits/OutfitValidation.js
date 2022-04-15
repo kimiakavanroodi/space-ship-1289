@@ -3,8 +3,7 @@ const Joi = require("joi")
 
 // calendar schema for outfit body
 module.exports.createOutfitSchema = Joi.object({
-    collage_type: Joi.string().required(),
-    liked: Joi.boolean(),
+    title: Joi.string().required(),
     pieces: Joi.array().items({
         name: Joi.string().required(),
         img_url: Joi.string().required(),
