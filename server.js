@@ -7,6 +7,15 @@ const MongoClient = require('mongodb').MongoClient
 const admin = require("firebase-admin");
 const { getSecret } = require('./config/SecretManager');
 
+// set up live socket connection
+const io = require('socket.io')(http, {
+    cors: {
+        origin: '*',
+    }
+});
+require('./config/SocketIO')(io)
+app.set('socketio', io)
+
 // import all routes here
 require('./api/routes')(app);
 

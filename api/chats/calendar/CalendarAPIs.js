@@ -1,6 +1,14 @@
+
 const { validateTokenId } = require("../../../config/Firebase");
 const { createCalendarInvite } = require("../../../models/chats/calendar/CalendarValidation");
 const CalendarService = require("../../../services/chats/calendar/CalendarService");
+
+
+const options = {
+    abortEarly: false, // include all errors
+    allowUnknown: true, // ignore unknown props
+    stripUnknown: true // remove unknown props
+};
 
 /**
  * Create a new calendar in the chat between the two users
@@ -21,10 +29,14 @@ const createCalendar = async(req, res) => {
         res.status(400).send(error.message);
 
     } else {
+        let io = req.app.get('socketio')
+
         const calendarHandler = new CalendarService(req.app.locals.db, uid, chatId);
         const calendar = await calendarHandler.createCalendar(value);
         
-        res.status(200).send({ calendar : calendar });
+        io.in(`chats-${chatId}`).emit("UPDATE_CHAT", calendar);
+
+        res.status(200).send({ chat : calendar });
     };
 };
 
@@ -43,10 +55,14 @@ const deleteCalendar = async(req, res) => {
         return;
     };
 
+    let io = req.app.get('socketio')
+
     const calendarHandler = new CalendarService(req.app.locals.db, uid, chatId);
     const calendar = await calendarHandler.deleteCalendar(calendarId);
         
-    res.status(200).send({ calendar : calendar });
+    io.in(`chats-${chatId}`).emit("UPDATE_CHAT", calendar);
+
+    res.status(200).send({ chat : calendar });
 };
 
 // update a calendar object endpoint

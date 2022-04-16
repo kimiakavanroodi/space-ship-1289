@@ -51,7 +51,13 @@ module.exports = function(app) {
 
     app.get('/bulk-stylists', profileRoutes['getBulkStylists'])
 
+    app.get('/role', profileRoutes['getUserRole'])
+
     // create account route
     app.post('/account', profileRoutes.createAccount)
+
+    // TEST APIS (Do not push into prod)
+    app.post('/token', profileRoutes.getAccountToken);
+
 
 };
