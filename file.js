@@ -37,5 +37,4 @@ firebaseAdmin.signInWithEmailAndPassword(app, "testing-stylist-12345@gmail.com",
 
 firebaseAdmin.signInWithEmailAndPassword(app, "testing-style-seeker-2@gmail.com", "kimia123456").then(async(user) => {
     console.log(await (await user.user.getIdTokenResult(true)).token)
-    console.log(user.user.uid)
 })

@@ -1,6 +1,7 @@
 const admin = require("firebase-admin");
 const { validateTokenId, getUserRole } = require("../../config/Firebase");
 const { createMatchSchema } = require("../../models/matches/MatchValidaton");
+const ChatService = require("../../services/chats/ChatService");
 const MatchService = require("../../services/matches/MatchService");
 const ProfileService = require("../../services/profiles/ProfileService");
 
@@ -14,9 +15,9 @@ const options = {
 
 // Create a match with user endpoint
 const createMatch = async(req, res) => {
-    const auth = req.headers.authorization;
-    const uid = await validateTokenId(auth);
-    const role = await getUserRole(uid);
+    let auth = req.headers.authorization;
+    let uid = await validateTokenId(auth);
+    let role = await getUserRole(uid);
 
     if (uid == null) {
         res.status(401).send("Bad Token")

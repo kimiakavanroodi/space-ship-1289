@@ -1,5 +1,5 @@
 const { ObjectID } = require("mongodb");
-const { getUserRole, getUserAge, getUserDisplayName } = require("../../config/Firebase");
+const { getUserRole, getUserAge, getUserDisplayName, getUserProfilePic } = require("../../config/Firebase");
 
 /**
  * Profile class to manage all users and user actions, 
@@ -18,12 +18,16 @@ class ProfileService {
      createStyleSeekerProfile = async(uid, profile) => {
         const age = await getUserAge(uid);
         const name = await getUserDisplayName(uid);
+        const profilePic = await getUserProfilePic(uid);
+
+        console.log(profilePic)
 
         // create a new style seeker object
         const styleSeekerBody = {
             '_id': uid,
             'name': name,
             'role': "style-seeker",
+            "profile_img": profilePic,
             'age': age,
             ...profile // copy over contents from the request body
         };
@@ -79,12 +83,14 @@ class ProfileService {
     createStylistProfile = async(uid, profile) => {
         const age = await getUserAge(uid);
         const name = await getUserDisplayName(uid);
+        const profilePic = await getUserProfilePic(iod)
 
         // create a new stylist object
         const stylistBody = {
             '_id': uid,
             'name': name,
             'role': "stylist",
+            "profile_img": profilePic,
             'age': age,
             ...profile // copy over contents from the request body
         };
@@ -121,7 +127,7 @@ class ProfileService {
     };
 
     getStylistRate = async(stylist_uid) => {
-        return (await this.getStylistProfile(stylist_uid))['rate']['cost']
+        return (await this.getStylistProfile(stylist_uid))['rate']
     };
 
     /**

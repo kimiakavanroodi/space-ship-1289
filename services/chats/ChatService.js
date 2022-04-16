@@ -31,7 +31,9 @@ class ChatService {
         const getAllChatDetails = new Promise(async(resolve, reject) => {
             const chatArr = []
             // get the chat object
-            await this.db.collection('chats').find(filterBody).forEach((item) => chatArr.push(item)) 
+            await this.db.collection('chats').find(filterBody).forEach((item) => { 
+                chatArr.push({ chat_id : item._id, profile: item.recip_profile })
+            })
             resolve(chatArr)
         }).then((doc) => doc)
 
@@ -102,13 +104,20 @@ class ChatService {
 
         const profileHandler = new ProfileService(this.db);
         const stylistRate = await profileHandler.getStylistRate(stylist_uid);
+        const currUserRole = await getUserRole(this.uid);
+
+        var profile = [];
+        if (currUserRole === "stylist") {
+            profile = await profileHandler.getStyleSeekerProfile(style_seeker_uid)
+        } else {
+            profile = await profileHandler.getStylistProfile(stylist_uid)
+        }
 
         // create a new chat object with default values
         const chatBody = {
             stylist_uid: stylist_uid,
             style_seeker_uid: style_seeker_uid,
-            stylist_profile: await profileHandler.getStylistProfile(stylist_uid),
-            style_seeker_profile: await profileHandler.getStyleSeekerProfile(style_seeker_uid),
+            recip_profile: profile,
             messages: [],
             calendar_invites: [],
             stylist_rate: stylistRate,

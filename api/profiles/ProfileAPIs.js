@@ -26,7 +26,7 @@ const createAccount = async(req, res) => {
         };
 
         admin.auth().createUser(accountBody).then((user) => {
-            admin.auth().setCustomUserClaims(user.uid, { role : value.role, age: value.age, onboarding: false }) // set role in metadata
+            admin.auth().setCustomUserClaims(user.uid, { role : value.role, age: value.age, profile_img: value.profile_img, onboarding: false }) // set role in metadata
 
             res.status(200).send({ message : "Success!" })
          }).catch((error) => {

@@ -72,3 +72,13 @@ module.exports.getUserDisplayName = async(uid) => {
         return null;
     })
 };
+
+module.exports.getUserProfilePic = async(uid) => {
+    return admin.auth().getUser(uid).then((user) => {
+        return user.customClaims.profile_img;
+
+    }).catch((error) => {
+        console.log("Cannot get profile picture")
+        return null;
+    })
+};
