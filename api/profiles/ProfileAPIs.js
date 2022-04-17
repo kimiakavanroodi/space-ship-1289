@@ -1,4 +1,4 @@
-const { validateTokenId, getUserRole } = require("../../config/Firebase");
+const { validateTokenId, getUserRole, isNewUser, setUserStatus } = require("../../config/Firebase");
 const { stylistSchema, styleSeekerSchema, userAccountSchema } = require("../../models/profiles/UserValidation");
 const ProfileService = require("../../services/profiles/ProfileService");
 const admin = require("firebase-admin");
@@ -27,7 +27,7 @@ const createAccount = async(req, res) => {
         };
 
         admin.auth().createUser(accountBody).then((user) => {
-            admin.auth().setCustomUserClaims(user.uid, { role : value.role, age: value.age, profile_img: value.profile_img, onboarding: false }) // set role in metadata
+            admin.auth().setCustomUserClaims(user.uid, { role : value.role, new_user: false, age: value.age, profile_img: value.profile_img }) // set role in metadata
 
             res.status(200).send({ message : "Success!" })
          }).catch((error) => {
@@ -39,9 +39,9 @@ const createAccount = async(req, res) => {
  
 // create a stylist profile endpoint
  const createStylistProfile = async(req, res) => {
-     const auth = req.headers.authorization
-     const uid = await validateTokenId(auth)
-     const role = await getUserRole(uid)
+     let auth = req.headers.authorization
+     let uid = await validateTokenId(auth)
+     let role = await getUserRole(uid)
  
      if (uid == null) {
          res.status(401).send("Bad Token...");
@@ -60,7 +60,9 @@ const createAccount = async(req, res) => {
      } else {
          const profileHandler = new ProfileService(req.app.locals.db)
          const profile = await profileHandler.createStylistProfile(uid, value);
- 
+         console.log(profile)
+         setUserStatus(uid, false);
+
          res.status(200).send({ profile : profile })
      }
  };
@@ -88,6 +90,8 @@ const createAccount = async(req, res) => {
      const uid = await validateTokenId(auth);
      const role = await getUserRole(uid);
      
+     console.log(role)
+
      if (uid == null) {
          res.status(401).send("Bad Token...");
          return;
@@ -107,6 +111,7 @@ const createAccount = async(req, res) => {
      } else {
          const profileHandler = new ProfileService(req.app.locals.db)
          const profile = await profileHandler.createStyleSeekerProfile(uid, value);
+         setUserStatus(uid, false);
  
          res.status(200).send({ profile : profile })
      }
@@ -148,7 +153,7 @@ const getBulkStylists = async(req, res) => {
      const profileHandler = new ProfileService(req.app.locals.db);
      const stylists = await profileHandler.getBulkStylists(Number(page_token));
  
-     res.status(200).send({ stylists: stylists, page_token: Number(page_token) + 1 })
+     res.status(200).send({ stylists: stylists })
  };
 
  // get a user's role
@@ -164,6 +169,20 @@ const getBulkStylists = async(req, res) => {
     const user_role = await getUserRole(uid);
 
     res.status(200).send({ role : user_role });
+};
+
+const isANewUser = async(req, res) => {
+    const auth = req.headers.authorization
+    const uid = await validateTokenId(auth)
+    
+    if (uid == null) {
+        res.status(401).send("Bad Token...")
+        return;
+    };
+
+    const new_user = await isNewUser(uid);
+
+    res.status(200).send({ new_user : new_user });
 };
 
 
@@ -182,6 +201,7 @@ const getBulkStylists = async(req, res) => {
 };
 
 
+
  const profileRoutes = {
     "createStylistProfile": createStylistProfile,
     "getStylistProfile": getStylistProfile,
@@ -190,6 +210,7 @@ const getBulkStylists = async(req, res) => {
     "createAccount": createAccount,
     "createStyleSeekerProfile": createStyleSeekerProfile,
     "getUserRole": seekUserRole,
+    "isNewUser": isANewUser,
     "getAccountToken": getAccountToken
  };
 

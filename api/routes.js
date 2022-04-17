@@ -52,6 +52,7 @@ module.exports = function(app) {
     app.get('/bulk-stylists', profileRoutes['getBulkStylists'])
 
     app.get('/role', profileRoutes['getUserRole'])
+    app.get('/new-user', profileRoutes['isNewUser'])
 
     // create account route
     app.post('/account', profileRoutes.createAccount)

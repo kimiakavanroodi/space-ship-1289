@@ -20,8 +20,6 @@ class ProfileService {
         const name = await getUserDisplayName(uid);
         const profilePic = await getUserProfilePic(uid);
 
-        console.log(profilePic)
-
         // create a new style seeker object
         const styleSeekerBody = {
             '_id': uid,
@@ -37,7 +35,8 @@ class ProfileService {
             await this.db.collection('style-seeker').insertOne(styleSeekerBody).then((doc) => {
                 // return back the style seeker object
                 resolve(styleSeekerBody);
-            })
+                
+            }).catch((err) => resolve(null))
         }).then((doc) => doc);
 
         return await createStyleSeekerProfile;
@@ -83,7 +82,7 @@ class ProfileService {
     createStylistProfile = async(uid, profile) => {
         const age = await getUserAge(uid);
         const name = await getUserDisplayName(uid);
-        const profilePic = await getUserProfilePic(iod)
+        const profilePic = await getUserProfilePic(uid)
 
         // create a new stylist object
         const stylistBody = {
@@ -100,8 +99,10 @@ class ProfileService {
             await this.db.collection('stylist').insertOne(stylistBody).then((doc) => {
                 // return the object
                 resolve(stylistBody);
-            })
-        }).then((doc) => doc);
+            }).catch((err) => resolve(null))
+        }).then((doc) => doc)
+
+        console.log(await createStylistProfile)
 
         return await createStylistProfile;
     };
@@ -112,7 +113,7 @@ class ProfileService {
      **/
     getBulkStylists = async(page_token) => {
         // create a query from the database to get a certain page
-        const agg = [{ '$skip': Number(page_token) }, { '$limit': 2 } ];
+        const agg = [{ '$skip': Number(page_token) }, { '$limit': 100 } ];
         
         // get the documents from the database
         const pageDocuments = new Promise(async(resolve, reject) => {

@@ -82,3 +82,22 @@ module.exports.getUserProfilePic = async(uid) => {
         return null;
     })
 };
+
+module.exports.isNewUser = async(uid) => {
+    return admin.auth().getUser(uid).then((user) => {
+        return user.customClaims.new_user;
+
+    }).catch((error) => {
+        console.log("Cannot get new user")
+        return null;
+    })
+};
+
+module.exports.setUserStatus = async(uid, status) => {
+    admin.auth().setCustomUserClaims(uid, { 
+        role : await this.getUserRole(uid), 
+        new_user: status, 
+        age: await this.getUserAge(uid), 
+        profile_img: await this.getUserProfilePic(uid)
+    }) // set role in metadata
+}
