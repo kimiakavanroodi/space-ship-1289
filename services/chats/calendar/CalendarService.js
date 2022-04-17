@@ -23,6 +23,7 @@ class CalendarService extends ChatService {
         const role = await getUserRole(this.uid);
         const displayName = await getUserDisplayName(this.uid);
         const userEmail = await getUserEmail(this.uid);
+        const profilePic = await getUserDisplayName(this.uid)
 
         // create a new calendar object & add new details
         const calendarBody = {
@@ -32,10 +33,12 @@ class CalendarService extends ChatService {
                 role: role,
                 uid: this.uid,
                 name: displayName,
+                profile_pic: profilePic,
                 email: userEmail
             },   
             invitee: {
                 name: "",
+                profile_pic: "",
                 uid: "",
                 role: "",
                 email: ""
@@ -56,6 +59,7 @@ class CalendarService extends ChatService {
         // update values in the calendar object
         calendarBody['invitee']['name'] = await getUserDisplayName(invitee_uid);
         calendarBody['invitee']['uid'] = invitee_uid;
+        calendarBody['invitee']['profile_pic'] = await getUserDisplayName(invitee_uid);
         calendarBody['invitee']['role'] = await getUserRole(invitee_uid);
         calendarBody['invitee']['email'] = await getUserEmail(invitee_uid);
 

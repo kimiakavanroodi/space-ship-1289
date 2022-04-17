@@ -4,6 +4,7 @@ const Joi = require("joi")
 // calendar schema for outfit body
 module.exports.createOutfitSchema = Joi.object({
     title: Joi.string().required(),
+    description: Joi.string().required(),
     pieces: Joi.array().items({
         name: Joi.string().required(),
         img_url: Joi.string().required(),
