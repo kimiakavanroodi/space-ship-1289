@@ -21,18 +21,27 @@ class ChatService {
      **/
     getAllChats = async() => {
         const role = await getUserRole(this.uid)
+        console.log(this.uid)
         const reformatRole = `${role.replace(/-/g, '_')}_uid` // style_seeker_uid or stylist_uid
 
         // create filter object to search in database based user's uid
         const filterBody = {};
         filterBody[reformatRole] = this.uid
+
+        var recipient = ``
+        if (role == "stylist") {
+            recipient = "style_seeker_profile"
+        } else {
+            recipient = "stylist_profile"
+        }
         
         // get all chat details from database
         const getAllChatDetails = new Promise(async(resolve, reject) => {
             const chatArr = []
             // get the chat object
             await this.db.collection('chats').find(filterBody).forEach((item) => { 
-                chatArr.push({ chat_id : item._id, profile: item.recip_profile })
+                console.log(item)
+                chatArr.push({ chat_id : item._id, profile: item[recipient] })
             })
             resolve(chatArr)
         }).then((doc) => doc)
@@ -84,10 +93,23 @@ class ChatService {
         const filterBody = { "_id" : ObjectID(chat_id) };
         filterBody[reformatRole] = this.uid
 
+        var recipient = ``
+        var person = ``
+        if (role == "stylist") {
+            recipient = "stylist"
+            person = "style_seeker_profile"
+        } else {
+            recipient = "style_seeker"
+            person = "stylist_profile"
+        }
+
         // get the specific chat from the database
         const getChatDetails = new Promise((resolve, reject) => {
             this.db.collection('chats').findOne(filterBody).then((doc) => {
                 // return the chat object
+                doc['profile'] = doc[person]
+                delete doc[person]
+                delete doc[`${recipient}_profile`]
                 resolve(doc)
             })}).then((doc) => doc)
         
@@ -104,20 +126,14 @@ class ChatService {
 
         const profileHandler = new ProfileService(this.db);
         const stylistRate = await profileHandler.getStylistRate(stylist_uid);
-        const currUserRole = await getUserRole(this.uid);
 
-        var profile = [];
-        if (currUserRole === "stylist") {
-            profile = await profileHandler.getStyleSeekerProfile(style_seeker_uid)
-        } else {
-            profile = await profileHandler.getStylistProfile(stylist_uid)
-        }
 
         // create a new chat object with default values
         const chatBody = {
             stylist_uid: stylist_uid,
             style_seeker_uid: style_seeker_uid,
-            recip_profile: profile,
+            style_seeker_profile: await profileHandler.getStyleSeekerProfile(style_seeker_uid),
+            stylist_profile: await profileHandler.getStylistProfile(stylist_uid),
             messages: [],
             calendar_invites: [],
             stylist_rate: stylistRate,

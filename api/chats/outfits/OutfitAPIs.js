@@ -23,7 +23,6 @@ const createOutfit = async(req, res) => {
         return;
     };
 
-    console.log(role)
     if (role !== "stylist") {
         res.status(403).send("You cannot make outfits.")
         return;
@@ -40,7 +39,7 @@ const createOutfit = async(req, res) => {
         const outfitHandler = new OutfitService(req.app.locals.db, uid, chatId);
         const outfit = await outfitHandler.createOutfit(value);
 
-        io.in(`chats-${chatId}`).emit("UPDATE_CHAT", outfit);
+        io.in(`chats-${chatId}`).emit("UPDATE_OUTFIT", outfit);
 
         res.status(200).send({ chat : outfit })
     };
@@ -68,7 +67,13 @@ const payOutfit = async(req, res) => {
 
     let stylist_rate = allOutfits['stylist_rate'];
 
-    const outfit = await outfitHandler.seeOutfit(uid, outfitId);
+    const outfit = await outfitHandler.seeOutfit(outfitId);
+
+    let io = req.app.get('socketio')
+
+    console.log(outfit)
+
+    io.in(`chats-${chatId}`).emit("UPDATE_OUTFIT", outfit);
 
     res.status(200).send({ outfit : outfit })
 };

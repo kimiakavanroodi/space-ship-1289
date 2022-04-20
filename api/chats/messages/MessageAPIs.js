@@ -33,7 +33,7 @@ const createMessage = async(req, res) => {
         const messageHandler = new MessageService(req.app.locals.db, uid, chatId);
         const message = await messageHandler.createMessage(value);
 
-        io.in(`chats-${chatId}`).emit("UPDATE_CHAT", message);
+        io.in(`chats-${chatId}`).emit("UPDATE_MESSAGE", message);
         
         res.status(200).send({ chat : message })
     };
@@ -58,7 +58,7 @@ const createMessage = async(req, res) => {
     const messageHandler = new MessageService(req.app.locals.db, uid, chatId);
     const message = await messageHandler.deleteMessage(messageId);
 
-    io.in(`chats-${chatId}`).emit("UPDATE_CHAT", message);
+    io.in(`chats-${chatId}`).emit("UPDATE_MESSAGE", message);
 
     res.status(200).send({ chat : message })
 };
@@ -90,7 +90,7 @@ const createMessage = async(req, res) => {
         const messageHandler = new MessageService(req.app.locals.db, uid, chatId);
         const message = await messageHandler.updateMessage(messageId, value);
 
-        io.in(`chats-${chatId}`).emit("UPDATE_CHAT", message);
+        io.in(`chats-${chatId}`).emit("UPDATE_MESSAGE", message);
 
         res.status(200).send({ chat : message })
     }

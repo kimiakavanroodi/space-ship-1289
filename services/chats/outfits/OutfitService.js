@@ -48,10 +48,10 @@ class OutfitService extends ChatService {
         // get outfit details such as rate and stylist id 
         const chat = (await this.getChat(this.chatId));
 
-        chat.outfits.filter((val, idx, arr) => {
+        chat.outfits.map((val, idx, arr) => {
             if (val._id === outfitId) {
                 val.has_paid = true;
-            }
+            } 
         });
 
         const updatedChat = await this.updateChat(this.chatId, chat);

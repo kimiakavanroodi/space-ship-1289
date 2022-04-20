@@ -1,4 +1,4 @@
-const { validateTokenId, getUserRole, isNewUser, setUserStatus } = require("../../config/Firebase");
+const { validateTokenId, getUserRole, isNewUser, setUserStatus, getUserAge } = require("../../config/Firebase");
 const { stylistSchema, styleSeekerSchema, userAccountSchema } = require("../../models/profiles/UserValidation");
 const ProfileService = require("../../services/profiles/ProfileService");
 const admin = require("firebase-admin");
@@ -26,10 +26,11 @@ const createAccount = async(req, res) => {
             displayName: value.name
         };
 
-        admin.auth().createUser(accountBody).then((user) => {
-            admin.auth().setCustomUserClaims(user.uid, { role : value.role, new_user: false, age: value.age, profile_img: value.profile_img }) // set role in metadata
+        admin.auth().createUser(accountBody).then(async(user) => {
+            admin.auth().setCustomUserClaims(user.uid, { role : value.role, new_user: false, age: value.age, profile_img: value.profile_img }).then((resp) => {
+                res.status(200).send({ message : "Success!" })
+            }) // set role in metadata
 
-            res.status(200).send({ message : "Success!" })
          }).catch((error) => {
 
             res.status(400).send({ message : error.message})
@@ -42,6 +43,7 @@ const createAccount = async(req, res) => {
      let auth = req.headers.authorization
      let uid = await validateTokenId(auth)
      let role = await getUserRole(uid)
+
  
      if (uid == null) {
          res.status(401).send("Bad Token...");
@@ -60,7 +62,6 @@ const createAccount = async(req, res) => {
      } else {
          const profileHandler = new ProfileService(req.app.locals.db)
          const profile = await profileHandler.createStylistProfile(uid, value);
-         console.log(profile)
          setUserStatus(uid, false);
 
          res.status(200).send({ profile : profile })
@@ -90,8 +91,6 @@ const createAccount = async(req, res) => {
      const uid = await validateTokenId(auth);
      const role = await getUserRole(uid);
      
-     console.log(role)
-
      if (uid == null) {
          res.status(401).send("Bad Token...");
          return;
@@ -167,6 +166,8 @@ const getBulkStylists = async(req, res) => {
     };
 
     const user_role = await getUserRole(uid);
+
+    console.log(user_role)
 
     res.status(200).send({ role : user_role });
 };

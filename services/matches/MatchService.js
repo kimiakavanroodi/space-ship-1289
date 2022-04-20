@@ -108,6 +108,7 @@ class MatchService {
            resolve(arr);
         }).then((items) => items)
 
+
         // return the match object
         return await allMatches;
     };

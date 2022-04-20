@@ -23,7 +23,6 @@ module.exports.getUserRole = async(uid) => {
         return user.customClaims.role;
 
     }).catch((error) => {
-        console.log("Wrong role")
         return null;
     })
 };

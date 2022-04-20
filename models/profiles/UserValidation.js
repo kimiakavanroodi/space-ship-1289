@@ -14,7 +14,7 @@ module.exports.userAccountSchema = Joi.object({
 // stylist profile schema for request body
 module.exports.stylistSchema = Joi.object({
     cost: Joi.number().required(),
-    // description: Joi.string().required(),
+    description: Joi.string().required(),
     interests: Joi.array().optional(),
     portfolio: Joi.array().optional()
 })

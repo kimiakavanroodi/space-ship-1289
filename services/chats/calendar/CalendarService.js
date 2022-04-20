@@ -1,6 +1,6 @@
 const ChatService = require("../ChatService");
 const { v4: uuidv4 } = require('uuid');
-const { getUserEmail, getUserDisplayName, getUserRole } = require("../../../config/Firebase");
+const { getUserEmail, getUserDisplayName, getUserRole, getUserProfilePic } = require("../../../config/Firebase");
 
 /**
  * Calendar Service that handles calendar invites between style-seekers & stylists 
@@ -23,7 +23,7 @@ class CalendarService extends ChatService {
         const role = await getUserRole(this.uid);
         const displayName = await getUserDisplayName(this.uid);
         const userEmail = await getUserEmail(this.uid);
-        const profilePic = await getUserDisplayName(this.uid)
+        const profilePic = await getUserProfilePic(this.uid)
 
         // create a new calendar object & add new details
         const calendarBody = {

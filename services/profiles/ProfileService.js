@@ -35,7 +35,7 @@ class ProfileService {
             await this.db.collection('style-seeker').insertOne(styleSeekerBody).then((doc) => {
                 // return back the style seeker object
                 resolve(styleSeekerBody);
-                
+
             }).catch((err) => resolve(null))
         }).then((doc) => doc);
 
@@ -102,8 +102,6 @@ class ProfileService {
             }).catch((err) => resolve(null))
         }).then((doc) => doc)
 
-        console.log(await createStylistProfile)
-
         return await createStylistProfile;
     };
     /**
@@ -113,7 +111,7 @@ class ProfileService {
      **/
     getBulkStylists = async(page_token) => {
         // create a query from the database to get a certain page
-        const agg = [{ '$skip': Number(page_token) }, { '$limit': 100 } ];
+        const agg = [{ '$skip': 0 }, { '$limit': 100 } ];
         
         // get the documents from the database
         const pageDocuments = new Promise(async(resolve, reject) => {
@@ -128,7 +126,7 @@ class ProfileService {
     };
 
     getStylistRate = async(stylist_uid) => {
-        return (await this.getStylistProfile(stylist_uid))['rate']
+        return (await this.getStylistProfile(stylist_uid))['cost']
     };
 
     /**

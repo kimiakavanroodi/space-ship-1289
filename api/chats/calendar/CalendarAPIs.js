@@ -34,7 +34,7 @@ const createCalendar = async(req, res) => {
         const calendarHandler = new CalendarService(req.app.locals.db, uid, chatId);
         const calendar = await calendarHandler.createCalendar(value);
         
-        io.in(`chats-${chatId}`).emit("UPDATE_CHAT", calendar);
+        io.in(`chats-${chatId}`).emit("UPDATE_CALENDAR", calendar);
 
         res.status(200).send({ chat : calendar });
     };
@@ -60,7 +60,7 @@ const deleteCalendar = async(req, res) => {
     const calendarHandler = new CalendarService(req.app.locals.db, uid, chatId);
     const calendar = await calendarHandler.deleteCalendar(calendarId);
         
-    io.in(`chats-${chatId}`).emit("UPDATE_CHAT", calendar);
+    io.in(`chats-${chatId}`).emit("UPDATE_CALENDAR", calendar);
 
     res.status(200).send({ chat : calendar });
 };
